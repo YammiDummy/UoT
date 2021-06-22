@@ -58,6 +58,8 @@ void ATankPawn::MoveRight(float InAxisValue)
 
 void ATankPawn::Yaw(float InYawValue)
 {
-	YawValue = InYawValue;
+	if (InYawValue) {
+		AddActorLocalRotation(FRotator(0, InYawValue, 0));
+	}
 }
 

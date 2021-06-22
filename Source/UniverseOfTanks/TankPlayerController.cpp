@@ -19,7 +19,7 @@ void ATankPlayerController::SetupInputComponent()
 
 	InputComponent->BindAxis("MoveRight", this, &ATankPlayerController::MoveRight);
 
-	InputComponent->BindAxis("Rotate", this, &ATankPlayerController::Yaw)
+	InputComponent->BindAxis("Yaw", this, &ATankPlayerController::Yaw);
 }
 
 void ATankPlayerController::MoveForward(float AxisValue)

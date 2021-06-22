@@ -54,6 +54,4 @@ public:
 private:
 	float CurrentMoveForwardAxis = 0;
 	float CurrentMoveRightAxis = 0;
-	float YawValue = 0;
-
 };
