@@ -6,9 +6,12 @@
 #include "GameFramework/Pawn.h"
 #include "TankPawn.generated.h"
 
+class ATankPlayerController;
 class UStaticMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class UArrowComponent;
+class ACannon;
 
 UCLASS(Blueprintable)
 class UNIVERSEOFTANKS_API ATankPawn : public APawn
@@ -31,8 +34,23 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Components")
 	UCameraComponent* Camera;
 
+	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Components")
+	UArrowComponent* CannonSetupPoint;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
-	float MoveSpeed = 100.f;
+	float MoveSpeed = 100.f; 
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
+	float YawSpeed = 0.5f; 
+		
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
+	float YawSensitivity = 0.5f;	
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
+	float TurretRotationSensitivity = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon")
+	TSubclassOf<ACannon> CannonClass;
 
 protected:
 	// Called when the game starts or when spawned
@@ -49,9 +67,29 @@ public:
 	void MoveRight (float InAxisValue);
 	
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-	void Yaw(float InYawValue);
+	void Yaw(float InAxisValue);
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void FireSpecial();
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void Fire();
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	void ReloadAmmo();
 
 private:
-	float CurrentMoveForwardAxis = 0;
-	float CurrentMoveRightAxis = 0;
+	void SetupCannon();
+
+	UPROPERTY()
+	ATankPlayerController* TankController = nullptr;
+	
+	UPROPERTY()
+	ACannon* Cannon;
+
+
+	float CurrentMoveForwardAxis = 0.f;
+	float CurrentMoveRightAxis = 0.f;
+	float CurrentYawAxis = 0.f;
+	float TargetYawAxis = 0.f;
 };

@@ -3,6 +3,12 @@
 
 #include "TankPlayerController.h"
 #include "TankPawn.h"
+#include "DrawDebugHelpers.h"
+
+ATankPlayerController::ATankPlayerController()
+{
+	bShowMouseCursor = true;
+}
 
 void ATankPlayerController::BeginPlay()
 {
@@ -20,6 +26,36 @@ void ATankPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("MoveRight", this, &ATankPlayerController::MoveRight);
 
 	InputComponent->BindAxis("Yaw", this, &ATankPlayerController::Yaw);
+
+	InputComponent->BindAction("Fire", IE_Pressed, this, &ATankPlayerController::Fire);
+
+	InputComponent->BindAction("FireSpecial", IE_Pressed, this, &ATankPlayerController::FireSpecial);
+
+	InputComponent->BindAction("Reload", IE_Pressed, this, &ATankPlayerController::ReloadAmmo);
+
+}
+
+void ATankPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	FVector MousePosition, MouseDirection;
+	DeprojectMousePositionToWorld(MousePosition, MouseDirection);
+
+	if (TankPawn) {
+		FVector TankPosition = TankPawn->GetActorLocation();
+		CachedMousePos = MousePosition - TankPosition;
+		CachedMousePos.Z = 0;
+		CachedMousePos.Normalize();
+		CachedMousePos = TankPosition + CachedMousePos * 500.f;
+		
+		//DrawDebugLine(GetWorld(), TankPosition, CachedMousePos, FColor::Green, false, 0.0f, 0, 5.f);
+	}
+}
+
+FVector ATankPlayerController::GetMousePos() const
+{
+	return CachedMousePos;
 }
 
 void ATankPlayerController::MoveForward(float AxisValue)
@@ -38,10 +74,34 @@ void ATankPlayerController::MoveRight(float AxisValue)
 	}
 }
 
-void ATankPlayerController::Yaw(float YawValue)
+void ATankPlayerController::Yaw(float AxisValue)
 {
 	if (TankPawn)
 	{
-		TankPawn->Yaw(YawValue);
+		TankPawn->Yaw(AxisValue);
+	}
+}
+
+void ATankPlayerController::FireSpecial()
+{
+	if (TankPawn)
+	{
+		TankPawn->FireSpecial();
+	}
+}
+
+void ATankPlayerController::Fire()
+{
+	if (TankPawn)
+	{
+		TankPawn->Fire();
+	}
+}
+
+void ATankPlayerController::ReloadAmmo()
+{
+	if (TankPawn)
+	{
+		TankPawn->ReloadAmmo();
 	}
 }

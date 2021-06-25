@@ -15,13 +15,24 @@ class UNIVERSEOFTANKS_API ATankPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	ATankPlayerController();
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION(BlueprintPure, Category = "Input")
+	FVector GetMousePos() const;
+
 private:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
-	void Yaw(float YawVaule);
+	void Yaw(float AxisVaule);
+	void FireSpecial();
+	void Fire();
+	void ReloadAmmo();
 private:
 	UPROPERTY()
 	class ATankPawn* TankPawn;
+	
+	FVector CachedMousePos;
 };
