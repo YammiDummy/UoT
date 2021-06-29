@@ -36,14 +36,6 @@
 			"Type": "SymbolFile"
 		},
 		{
-			"Path": "$(ProjectDir)/Plugins/UE4GitPlugin/Binaries/Win64/UE4Editor-GitSourceControl.dll",
-			"Type": "DynamicLibrary"
-		},
-		{
-			"Path": "$(ProjectDir)/Plugins/UE4GitPlugin/Binaries/Win64/UE4Editor-GitSourceControl.pdb",
-			"Type": "SymbolFile"
-		},
-		{
 			"Path": "$(EngineDir)/Plugins/2D/Paper2D/Binaries/Win64/UE4Editor-Paper2D.dll",
 			"Type": "DynamicLibrary"
 		},
@@ -153,6 +145,14 @@
 		},
 		{
 			"Path": "$(EngineDir)/Plugins/Developer/CLionSourceCodeAccess/Binaries/Win64/UE4Editor-CLionSourceCodeAccess.pdb",
+			"Type": "SymbolFile"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Developer/GitSourceControl/Binaries/Win64/UE4Editor-GitSourceControl.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Developer/GitSourceControl/Binaries/Win64/UE4Editor-GitSourceControl.pdb",
 			"Type": "SymbolFile"
 		},
 		{
@@ -4412,10 +4412,6 @@
 			"Type": "RequiredResource"
 		},
 		{
-			"Path": "$(ProjectDir)/Plugins/UE4GitPlugin/Binaries/Win64/UE4Editor.modules",
-			"Type": "RequiredResource"
-		},
-		{
 			"Path": "$(EngineDir)/Plugins/2D/Paper2D/Binaries/Win64/UE4Editor.modules",
 			"Type": "RequiredResource"
 		},
@@ -4445,6 +4441,10 @@
 		},
 		{
 			"Path": "$(EngineDir)/Plugins/Developer/CLionSourceCodeAccess/Binaries/Win64/UE4Editor.modules",
+			"Type": "RequiredResource"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Developer/GitSourceControl/Binaries/Win64/UE4Editor.modules",
 			"Type": "RequiredResource"
 		},
 		{
@@ -4846,10 +4846,6 @@
 			"Type": "UFS"
 		},
 		{
-			"Path": "$(ProjectDir)/Plugins/UE4GitPlugin/GitSourceControl.uplugin",
-			"Type": "UFS"
-		},
-		{
 			"Path": "$(EngineDir)/Plugins/2D/Paper2D/Paper2D.uplugin",
 			"Type": "UFS"
 		},
@@ -4879,6 +4875,10 @@
 		},
 		{
 			"Path": "$(EngineDir)/Plugins/Developer/CLionSourceCodeAccess/CLionSourceCodeAccess.uplugin",
+			"Type": "UFS"
+		},
+		{
+			"Path": "$(EngineDir)/Plugins/Developer/GitSourceControl/GitSourceControl.uplugin",
 			"Type": "UFS"
 		},
 		{

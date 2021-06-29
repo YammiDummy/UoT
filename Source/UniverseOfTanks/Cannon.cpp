@@ -7,6 +7,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "TimerManager.h"
 #include "DrawDebugHelpers.h"
+#include "Projectile.h"
 
 // Sets default values
 ACannon::ACannon()
@@ -24,22 +25,6 @@ ACannon::ACannon()
 
 }
 
-void ACannon::FireSpecial()
-{
-	
-	if (!bIsReadyToFireSpecial)
-	{
-		GEngine->AddOnScreenDebugMessage(10, 2.f, FColor::Red, TEXT("STOP CLICKING!!! (special isn't ready)"), true);
-		return;
-	}
-
-	bIsReadyToFireSpecial = false;
-
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("FIREEEEEE!!! (special)"), true);
-
-	GetWorld()->GetTimerManager().SetTimer(ReloadSpecialTimerHandle, this, &ACannon::ReloadSpecial, 5.f / FireRate, false);
-}
-
 void ACannon::Fire()
 {
 	if (!bIsReadyToFire)
@@ -48,9 +33,9 @@ void ACannon::Fire()
 		return;
 	}
 
-	else if (!Ammo)
+	else if (!CurrentAmmo)
 	{
-		GEngine->AddOnScreenDebugMessage(10, 2.f, FColor::Red, TEXT("STOP CLICKING!!! (ammo is empty) \n Press R to Reload"), true);
+		GEngine->AddOnScreenDebugMessage(10, 2.f, FColor::Red, TEXT("STOP CLICKING!!! (ammo is empty)"), true);
 		return;
 	};
 
@@ -59,21 +44,77 @@ void ACannon::Fire()
 	if (Type == ECannonType::FireProjectile)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("FIREEEEEE!!! (projectile)"), true);
+
+		if (ProjPool.Num() > 0) {
+			Projectile = ProjPool.Pop();
+		}
+
+		else 
+		{ 
+			Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation()); 
+		}
+		
+		if (Projectile)
+		{
+			Projectile->MoveRange=FireRange;
+			Projectile->Start(this);
+		}
+		GetWorld()->GetTimerManager().SetTimer(SingleFireTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
 	}
 
 	else if (Type == ECannonType::FireTrace)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("FIREEEEEE!!! (trace)"), true);
+		FHitResult HitResult;
+		FVector StartPoint = ProjectileSpawnPoint->GetComponentLocation();
+		FVector EndPoint = StartPoint + ProjectileSpawnPoint->GetForwardVector() * FireRange;
+		FCollisionQueryParams TraceParams = FCollisionQueryParams(FName("FireTrace"), true, this);
+		TraceParams.bTraceComplex = true;
+		TraceParams.bReturnPhysicalMaterial = false;
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, StartPoint, EndPoint, ECollisionChannel::ECC_Visibility, TraceParams))
+		{
+			DrawDebugLine(GetWorld(), StartPoint, HitResult.Location, FColor::Red, false, 0.5f, 0, 5);
+			if (HitResult.Actor.IsValid())
+			{
+				HitResult.Actor->Destroy();
+			}
+
+		}
+		else {
+			DrawDebugLine(GetWorld(), StartPoint, EndPoint, FColor::Red, false, 0.5f, 0, 5);
+		}
+		GetWorld()->GetTimerManager().SetTimer(SingleFireTimerHandle, this, &ACannon::Reload, 1.f / FireRate, false);
 	}
 
-	else if (Type == ECannonType::FireAuto)
+	else if (Type == ECannonType::FireTriple)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("FIREEEEEE!!! (auto)")), true;   //Не успел реализовать
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("FIREEEEEE!!! (triple)"), true);
+
+		Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
+		if (Projectile)
+		{
+			Projectile->MoveRange = FireRange;
+			Projectile->Start(this);
+		}
+		FRotator RotTemp = ProjectileSpawnPoint->GetComponentRotation();
+		RotTemp.Yaw += 10;
+		Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), RotTemp);
+		if (Projectile)
+		{
+			Projectile->MoveRange = FireRange;
+			Projectile->Start(this);
+		}
+		RotTemp.Yaw -= 20;
+		Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), RotTemp);
+		if (Projectile)
+		{
+			Projectile->MoveRange = FireRange;
+			Projectile->Start(this);
+		}
+		GetWorld()->GetTimerManager().SetTimer(SingleFireTimerHandle, this, &ACannon::Reload, 1.5f / FireRate, false);
 	}
 
-	Ammo--;
-
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &ACannon::Reload, 0.5f / FireRate, false);
+	CurrentAmmo--;
 
 }
 
@@ -87,11 +128,7 @@ void ACannon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetupCannonType(ECannonType::FireProjectile);
-
-	Reload();
-	ReloadSpecial();
-	
+	ReloadAmmo();
 }
 
 void ACannon::EndPlay(EEndPlayReason::Type Reason)
@@ -108,51 +145,17 @@ void ACannon::Reload()
 	
 }
 
-void ACannon::ReloadSpecial()
+void ACannon::SingleFire()
 {
-	bIsReadyToFireSpecial = true;
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("FIREEEEEE!!! (auto)")), true;
 }
 
 void ACannon::ReloadAmmo()
 {
-	if (Type == ECannonType::FireProjectile)
-	{
-		Ammo = 6;
-	}
 
-	else if (Type == ECannonType::FireTrace)
-	{
-		Ammo = 30;
-	}
-	
-	else if (Type == ECannonType::FireAuto)
-	{
-		Ammo = 10;
-	}
-
+	CurrentAmmo = MaxAmmo;
 	Reload();
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("RELOADED!!!"));
-}
-
-
-void ACannon::SetupCannonType(ECannonType PickedCannonType)
-{
-	if (PickedCannonType == ECannonType::FireProjectile)
-	{
-		Type = ECannonType::FireProjectile;
-	}
-
-	else if (PickedCannonType == ECannonType::FireTrace)
-	{
-		Type = ECannonType::FireTrace;
-	}
-
-	else if (PickedCannonType == ECannonType::FireAuto)
-	{
-		Type = ECannonType::FireAuto;
-	}
-
-	ReloadAmmo();
 
 }
 

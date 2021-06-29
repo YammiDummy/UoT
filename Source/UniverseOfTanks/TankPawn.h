@@ -70,15 +70,15 @@ public:
 	void Yaw(float InAxisValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void FireSpecial();
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
 	void Fire();
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void ReloadAmmo();
+	void SwapCannon();
 
-private:
+	//UFUNCTION(BlueprintCallable, Category = "Action")
+	//void ReloadAmmo();
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SetupCannon();
 
 	UPROPERTY()
@@ -86,6 +86,9 @@ private:
 	
 	UPROPERTY()
 	ACannon* Cannon;
+	
+	UPROPERTY()
+	ACannon* SecCannon = nullptr;
 
 
 	float CurrentMoveForwardAxis = 0.f;

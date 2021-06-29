@@ -29,9 +29,9 @@ void ATankPlayerController::SetupInputComponent()
 
 	InputComponent->BindAction("Fire", IE_Pressed, this, &ATankPlayerController::Fire);
 
-	InputComponent->BindAction("FireSpecial", IE_Pressed, this, &ATankPlayerController::FireSpecial);
+	//InputComponent->BindAction("Reload", IE_Pressed, this, &ATankPlayerController::ReloadAmmo);
 
-	InputComponent->BindAction("Reload", IE_Pressed, this, &ATankPlayerController::ReloadAmmo);
+	InputComponent->BindAction("SwapCannon", IE_Pressed, this, &ATankPlayerController::SwapCannon);
 
 }
 
@@ -82,14 +82,6 @@ void ATankPlayerController::Yaw(float AxisValue)
 	}
 }
 
-void ATankPlayerController::FireSpecial()
-{
-	if (TankPawn)
-	{
-		TankPawn->FireSpecial();
-	}
-}
-
 void ATankPlayerController::Fire()
 {
 	if (TankPawn)
@@ -98,10 +90,18 @@ void ATankPlayerController::Fire()
 	}
 }
 
-void ATankPlayerController::ReloadAmmo()
+void ATankPlayerController::SwapCannon()
 {
 	if (TankPawn)
 	{
-		TankPawn->ReloadAmmo();
+		TankPawn->SwapCannon();
 	}
 }
+
+//void ATankPlayerController::ReloadAmmo()
+//{
+//	if (TankPawn)
+//	{
+//		TankPawn->ReloadAmmo();
+//	}
+//}

@@ -29,16 +29,22 @@ public:
 	float FireRange = 1000.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire params")
-	float FireDamage = 1;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire params")
-	uint8 AutoShotNumber = 3;
+	float FireDamage = 1.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire params")
 	ECannonType Type;
 
-	UFUNCTION(BlueprintCallable, Category = "Fire")
-	void FireSpecial();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire params")
+	TSubclassOf<class AProjectile> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire params")
+	uint8 MaxAmmo;
+
+	UPROPERTY()
+	TArray<AProjectile*> ProjPool;
+
+	UPROPERTY()
+	AProjectile* Projectile;
 
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void Fire();
@@ -49,22 +55,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void ReloadAmmo();
 
+	uint8 CurrentAmmo;
+
 
 protected:
 	// Called when the game starts or when spawned
 	void Reload();
-	void ReloadSpecial();
-	void SetupCannonType(ECannonType CannonType);
+	void SingleFire();
 	virtual void BeginPlay() override;
 	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 
 	
 
 private:
-	uint8 Ammo = 0;
 	bool bIsReadyToFire = false;
 	bool bIsReadyToFireSpecial = false;
-
 	FTimerHandle ReloadTimerHandle;
-	FTimerHandle ReloadSpecialTimerHandle;
+	FTimerHandle SingleFireTimerHandle;
 };

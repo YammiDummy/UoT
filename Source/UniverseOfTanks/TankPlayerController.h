@@ -27,9 +27,9 @@ private:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
 	void Yaw(float AxisVaule);
-	void FireSpecial();
 	void Fire();
-	void ReloadAmmo();
+	void SwapCannon();
+	//void ReloadAmmo();
 private:
 	UPROPERTY()
 	class ATankPawn* TankPawn;

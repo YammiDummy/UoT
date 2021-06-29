@@ -90,14 +90,6 @@ void ATankPawn::Yaw(float InAxisValue)
 	TargetYawAxis = InAxisValue;
 }
 
-void ATankPawn::FireSpecial()
-{
-	if (Cannon)
-	{
-		Cannon->FireSpecial();
-	}
-}
-
 void ATankPawn::Fire()
 {
 	if (Cannon)
@@ -106,19 +98,35 @@ void ATankPawn::Fire()
 	}
 }
 
-void ATankPawn::ReloadAmmo()
+void ATankPawn::SwapCannon()
 {
-	if (Cannon)
-	{
-		Cannon->ReloadAmmo();
-	}
+	ACannon* Temp = Cannon;
+	Cannon = SecCannon;
+	SecCannon = Temp;
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SWAP!!!"), true);
+	
 }
+
+//void ATankPawn::ReloadAmmo()
+//{
+//	if (Cannon)
+//	{
+//		Cannon->ReloadAmmo();
+//	}
+//}
 
 void ATankPawn::SetupCannon()
 {
+	if (Cannon&&!SecCannon)
+	{
+		SwapCannon();
+	}
+
 	if (Cannon) {
 		Cannon->Destroy();
 		Cannon = nullptr;
+
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("CANNON DESTROYED!!!"), true);
 	}
 
 	if (CannonClass)
@@ -128,6 +136,7 @@ void ATankPawn::SetupCannon()
 		Params.Owner = this;
 		Cannon = GetWorld()->SpawnActor<ACannon>(CannonClass, Params);
 		Cannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SETUP!!!"), true);
 	}
 }
 
