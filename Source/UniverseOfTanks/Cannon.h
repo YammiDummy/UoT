@@ -32,6 +32,9 @@ public:
 	float FireDamage = 1.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire params")
+	float TraceDamage = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire params")
 	ECannonType Type;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Fire params")
@@ -54,6 +57,9 @@ public:
 		
 	UFUNCTION(BlueprintCallable, Category = "Fire")
 	void ReloadAmmo();
+
+	UFUNCTION()
+	virtual void GiveScore();
 
 	uint8 CurrentAmmo;
 

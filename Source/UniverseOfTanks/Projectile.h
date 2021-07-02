@@ -10,8 +10,15 @@ UCLASS()
 class UNIVERSEOFTANKS_API AProjectile : public AActor
 {
 	GENERATED_BODY()
+
+
+		DECLARE_EVENT(AProjectile, FAddScore)
+
 public:
 	AProjectile();
+
+
+	FAddScore TargetDestroyed;
 
 	void Start(class ACannon* InCannon);
 	
@@ -32,7 +39,6 @@ public:
 
 	UPROPERTY();
 	ACannon* LaunchCannon;
-
 	FTimerHandle MovementTimerHandle;
 	FTimerHandle LifeTimerHandle;
 

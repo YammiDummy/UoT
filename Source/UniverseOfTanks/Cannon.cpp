@@ -8,6 +8,7 @@
 #include "TimerManager.h"
 #include "DrawDebugHelpers.h"
 #include "Projectile.h"
+#include "DamageTakerInterface.h"
 
 // Sets default values
 ACannon::ACannon()
@@ -22,6 +23,7 @@ ACannon::ACannon()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<UArrowComponent>("Spawn point");
 	ProjectileSpawnPoint->SetupAttachment(CannonMesh);
+
 
 }
 
@@ -45,13 +47,19 @@ void ACannon::Fire()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("FIREEEEEE!!! (projectile)"), true);
 
+		FTransform NewProjectileTransform;
+		NewProjectileTransform.SetLocation(ProjectileSpawnPoint->GetComponentLocation());
+		NewProjectileTransform.SetRotation(ProjectileSpawnPoint->GetComponentRotation().Quaternion());
+
 		if (ProjPool.Num() > 0) {
 			Projectile = ProjPool.Pop();
+			Projectile->SetActorTransform(NewProjectileTransform);
 		}
 
 		else 
 		{ 
 			Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation()); 
+			Projectile->TargetDestroyed.AddUObject(this, &ACannon::GiveScore);
 		}
 		
 		if (Projectile)
@@ -76,7 +84,24 @@ void ACannon::Fire()
 			DrawDebugLine(GetWorld(), StartPoint, HitResult.Location, FColor::Red, false, 0.5f, 0, 5);
 			if (HitResult.Actor.IsValid())
 			{
-				HitResult.Actor->Destroy();
+				AActor* MyOwner = GetOwner();
+				if (HitResult.Actor != MyOwner)
+				{
+					IDamageTakerInterface* DamageTakerActor = Cast<IDamageTakerInterface>(HitResult.Actor);
+					if (DamageTakerActor)
+					{
+						FDamageData DamageData;
+						DamageData.DamageValue = TraceDamage;
+						DamageData.Instigator = MyOwner;
+						DamageData.DamageMaker = this;
+
+						DamageTakerActor->TakeDamage(DamageData);
+					}
+					else
+					{
+						HitResult.Actor->Destroy();
+					}
+				}
 			}
 
 		}
@@ -159,3 +184,7 @@ void ACannon::ReloadAmmo()
 
 }
 
+void ACannon::GiveScore()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SCORE!!!")), true;
+}

@@ -3,18 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameStructs.h"
 #include "GameFramework/Pawn.h"
+#include "GameUnit.h"
 #include "TankPawn.generated.h"
 
+
 class ATankPlayerController;
-class UStaticMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
-class UArrowComponent;
-class ACannon;
 
 UCLASS(Blueprintable)
-class UNIVERSEOFTANKS_API ATankPawn : public APawn
+class UNIVERSEOFTANKS_API ATankPawn : public AGameUnit
 {
 	GENERATED_BODY()
 
@@ -37,6 +37,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category = "Components")
 	UArrowComponent* CannonSetupPoint;
 
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UBoxComponent* HitCollider;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	class AProjectile* test;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
 	float MoveSpeed = 100.f; 
 	
@@ -50,7 +56,7 @@ public:
 	float TurretRotationSensitivity = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Turret|Cannon")
-	TSubclassOf<ACannon> CannonClass;
+	TSubclassOf<class ACannon> CannonClass;
 
 protected:
 	// Called when the game starts or when spawned
@@ -70,10 +76,10 @@ public:
 	void Yaw(float InAxisValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Action")
-	void Fire();
-
-	UFUNCTION(BlueprintCallable, Category = "Action")
 	void SwapCannon();
+
+	UFUNCTION()
+	void GetScore();
 
 	//UFUNCTION(BlueprintCallable, Category = "Action")
 	//void ReloadAmmo();
@@ -85,14 +91,12 @@ public:
 	ATankPlayerController* TankController = nullptr;
 	
 	UPROPERTY()
-	ACannon* Cannon;
-	
-	UPROPERTY()
 	ACannon* SecCannon = nullptr;
 
-
+private:
 	float CurrentMoveForwardAxis = 0.f;
 	float CurrentMoveRightAxis = 0.f;
 	float CurrentYawAxis = 0.f;
 	float TargetYawAxis = 0.f;
+	bool bIsReadyToFire = true;
 };

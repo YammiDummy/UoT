@@ -9,6 +9,11 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/ArrowComponent.h"
 #include "Cannon.h"
+#include "HealthComponent.h"
+#include "Components/BoxComponent.h"
+#include "GameStructs.h"
+#include "GameUnit.h"
+#include "Projectile.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -35,6 +40,12 @@ ATankPawn::ATankPawn()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+	HitCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("Hit collider"));
+	HitCollider->SetupAttachment(BodyMesh);
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health component"));
+	HealthComponent->OnDie.AddUObject(this, &ATankPawn::Die);
+	HealthComponent->OnDamaged.AddUObject(this, &ATankPawn::DamageTaken);
 }
 
 
@@ -90,14 +101,6 @@ void ATankPawn::Yaw(float InAxisValue)
 	TargetYawAxis = InAxisValue;
 }
 
-void ATankPawn::Fire()
-{
-	if (Cannon)
-	{
-		Cannon->Fire();
-	}
-}
-
 void ATankPawn::SwapCannon()
 {
 	ACannon* Temp = Cannon;
@@ -105,6 +108,11 @@ void ATankPawn::SwapCannon()
 	SecCannon = Temp;
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SWAP!!!"), true);
 	
+}
+
+void ATankPawn::GetScore()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SCORE!!!"), true);
 }
 
 //void ATankPawn::ReloadAmmo()
@@ -139,4 +147,3 @@ void ATankPawn::SetupCannon()
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SETUP!!!"), true);
 	}
 }
-
