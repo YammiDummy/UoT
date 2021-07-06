@@ -19,7 +19,7 @@ protected:
 	float CurrentScore;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Reward")
-	float RewardScore = 50;
+	float RewardScore = 50.f;
 
 public:
 
@@ -27,5 +27,8 @@ public:
 
 	UScoreComponent();
 
-	void GiveScore(FScoreData ScoreData);
+	float GetScore();
+
+	void SetScore(float Score);
+
 };

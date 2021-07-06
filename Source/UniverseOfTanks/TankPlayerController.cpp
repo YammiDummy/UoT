@@ -50,6 +50,7 @@ void ATankPlayerController::Tick(float DeltaSeconds)
 		CachedMousePos = TankPosition + CachedMousePos * 500.f;
 		
 		//DrawDebugLine(GetWorld(), TankPosition, CachedMousePos, FColor::Green, false, 0.0f, 0, 5.f);
+		TankPawn->SetTurretLookAtPoint(CachedMousePos);
 	}
 }
 

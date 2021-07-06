@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -13,30 +11,30 @@ class UNIVERSEOFTANKS_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	DECLARE_EVENT(UHealthComponent, FOnDie)
-	DECLARE_EVENT_OneParam(UHealthComponent, FOnHealthChanged, float)
-
-protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health values")
-		float MaxHealth = 10;
-
-	UPROPERTY()
-		float CurrentHealth;
-
-public:
-	FOnDie OnDie;
-	FOnHealthChanged OnDamaged;
-
-public:
+public:	
 	// Sets default values for this component's properties
 	UHealthComponent();
 
-	void TakeDamage(FDamageData DamageData);
+    DECLARE_EVENT(UHealthComponent, FOnDie)
+    DECLARE_EVENT_OneParam(UHealthComponent, FOnHealthChanged, float)
 
-	float GetHealth() const;
+protected:
 
-	float GetHealthState() const;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health values")
+    float MaxHealth = 4;
 
-	void AddHealth(float AddiditionalHealthValue);
+    UPROPERTY()
+    float CurrentHealth;
+
+public:
+    FOnDie OnDie;
+    FOnHealthChanged OnDamaged;
+
+    bool TakeDamage(FDamageData DamageData);
+
+    float GetHealth() const;
+
+    float GetHealthState() const;
+
+    void AddHealth(float AddiditionalHealthValue);
 };
-

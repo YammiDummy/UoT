@@ -6,9 +6,11 @@
 #include "TimerManager.h"
 #include "Cannon.h"
 #include "DamageTakerInterface.h"
-#include "IScorable.h"
+#include "Scorable.h"
 #include "TankPawn.h"
 #include "Tower.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
 
 AProjectile::AProjectile()
 {
@@ -20,6 +22,11 @@ AProjectile::AProjectile()
 	ProjMesh->SetupAttachment(RootComponent);
 	ProjMesh->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnMeshOverlapBegin);
 
+	HitVisualEffect = CreateDefaultSubobject<UParticleSystemComponent>("Visual effect");
+	HitVisualEffect->bAutoActivate = false;
+
+	HitAudioEffect= CreateDefaultSubobject<UAudioComponent>("Audio effect");
+	HitAudioEffect->bAutoActivate = false;
 }
 
 void AProjectile::Start(ACannon* InCannon)
@@ -33,39 +40,45 @@ void AProjectile::Start(ACannon* InCannon)
 void AProjectile::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+
+
 	UE_LOG(LogTemp, Warning, TEXT("Projectile %s collided with %s. "), *GetName(), *OtherActor->GetName());
-	AActor* MyOwner = GetOwner();
-	AActor* OwnerByOwner = MyOwner != nullptr ? MyOwner->GetOwner() : nullptr;
-	if (OtherActor != MyOwner && OtherActor != OwnerByOwner)
+	if (OtherActor != GetInstigator() && !OtherActor->GetClass()->IsChildOf(StaticClass()))
 	{
+		bool bObjectDestroyed = false;
 		IDamageTakerInterface* DamageTakerActor = Cast<IDamageTakerInterface>(OtherActor);
-		IIScorable* ScoreGiverActor = Cast<IIScorable>(OtherActor);
+		IScorable* InScorable = Cast<IScorable>(GetInstigator());
+		IScorable* OutScorable = Cast<IScorable>(OtherActor);
+
 		if (DamageTakerActor)
 		{
 			FDamageData DamageData;
 			DamageData.DamageValue = Damage;
-			DamageData.Instigator = MyOwner;
+			DamageData.Instigator = GetInstigator();
 			DamageData.DamageMaker = this;
 
-			if (ScoreGiverActor)
-			{
-				FScoreData ScoreData;
-				ScoreData.ScoreGiver = OtherActor;
-				ScoreData.ScoreTaker = OwnerByOwner;
-			}
-
-			DamageTakerActor->TakeDamage(DamageData);
+			bObjectDestroyed = DamageTakerActor->TakeDamage(DamageData);
 		}
-	}
-	if (!OtherActor)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("FIREEEEEE!!! (triple)"), true);
-		if (TargetDestroyed.IsBound())
+		else
 		{
-			TargetDestroyed.Broadcast();
+			Destroy();
+			bObjectDestroyed = true;
+		}
+
+		
+		
+		if (bObjectDestroyed && OutScorable && GetInstigator())
+		{
+
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SCORE"), true);
+			InScorable->SetScore(OutScorable->GetScore());
 		}
 	}
 	
+	HitVisualEffect->AddRelativeLocation(GetActorLocation());
+	HitAudioEffect->AddRelativeLocation(GetActorLocation());
+	HitVisualEffect->ActivateSystem();
+	HitAudioEffect->Play();
 	ToPool();
 }
 

@@ -6,20 +6,26 @@ UHealthComponent::UHealthComponent()
 	CurrentHealth = MaxHealth;
 }
 
-void UHealthComponent::TakeDamage(FDamageData DamageData)
+bool UHealthComponent::TakeDamage(FDamageData DamageData)
 {
 	float TakenDamageValue = DamageData.DamageValue;
 	CurrentHealth -= TakenDamageValue;
 
 	if (CurrentHealth <= 0)
 	{
-		if (OnDie.IsBound())
+		if (OnDie.IsBound()) 
+		{
 			OnDie.Broadcast();
+		}
+		return true;
 	}
 	else
 	{
 		if (OnDamaged.IsBound())
+		{
 			OnDamaged.Broadcast(TakenDamageValue);
+		}
+		return false;
 	}
 }
 

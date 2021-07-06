@@ -9,6 +9,9 @@
 #include "DrawDebugHelpers.h"
 #include "Projectile.h"
 #include "DamageTakerInterface.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
+#include "Camera/CameraShake.h"
 
 // Sets default values
 ACannon::ACannon()
@@ -23,6 +26,12 @@ ACannon::ACannon()
 
 	ProjectileSpawnPoint = CreateDefaultSubobject<UArrowComponent>("Spawn point");
 	ProjectileSpawnPoint->SetupAttachment(CannonMesh);
+
+	ShootEffect = CreateDefaultSubobject<UParticleSystemComponent>("ShootEffect");
+	ShootEffect -> SetupAttachment(ProjectileSpawnPoint);
+
+	AudioEffect = CreateDefaultSubobject<UAudioComponent>("AudioEffect");
+	AudioEffect->SetupAttachment(ProjectileSpawnPoint);
 
 
 }
@@ -58,12 +67,12 @@ void ACannon::Fire()
 
 		else 
 		{ 
-			Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation()); 
-			Projectile->TargetDestroyed.AddUObject(this, &ACannon::GiveScore);
+			Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
 		}
 		
 		if (Projectile)
 		{
+			Projectile->SetInstigator(GetInstigator());
 			Projectile->MoveRange=FireRange;
 			Projectile->Start(this);
 		}
@@ -139,6 +148,24 @@ void ACannon::Fire()
 		GetWorld()->GetTimerManager().SetTimer(SingleFireTimerHandle, this, &ACannon::Reload, 1.5f / FireRate, false);
 	}
 
+	ShootEffect->ActivateSystem();
+	AudioEffect->Play();
+
+	if (GetOwner() && GetOwner() == GetWorld()->GetFirstPlayerController()->GetPawn())
+	{
+		if (ShootForceEffect)
+		{
+			FForceFeedbackParameters ShootForceEffectParams;
+			ShootForceEffectParams.bLooping = false;
+			ShootForceEffectParams.Tag = "ShootForceEffectParams";
+			GetWorld()->GetFirstPlayerController()->ClientPlayForceFeedback(ShootForceEffect, ShootForceEffectParams);
+		}
+
+		if (ShootShake)
+		{
+			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(ShootShake);
+		}
+	}
 	CurrentAmmo--;
 
 }

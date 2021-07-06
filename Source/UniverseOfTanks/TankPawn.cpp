@@ -12,8 +12,10 @@
 #include "HealthComponent.h"
 #include "Components/BoxComponent.h"
 #include "GameStructs.h"
-#include "GameUnit.h"
 #include "Projectile.h"
+#include "ScoreComponent.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 ATankPawn::ATankPawn()
@@ -46,6 +48,16 @@ ATankPawn::ATankPawn()
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health component"));
 	HealthComponent->OnDie.AddUObject(this, &ATankPawn::Die);
 	HealthComponent->OnDamaged.AddUObject(this, &ATankPawn::DamageTaken);
+
+	ScoreComponent = CreateDefaultSubobject<UScoreComponent>(TEXT("Score component"));
+
+	DestroyVisualEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Visual effect"));
+	DestroyVisualEffect->SetupAttachment(BodyMesh);
+	DestroyVisualEffect->bAutoActivate = false;
+
+	DestroyAudioEffect = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio effect"));
+	DestroyAudioEffect->SetupAttachment(BodyMesh);
+	DestroyAudioEffect->bAutoActivate = false;
 }
 
 
@@ -53,8 +65,6 @@ ATankPawn::ATankPawn()
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	TankController = Cast<ATankPlayerController>(GetController());
 
 	SetupCannon();
 }
@@ -75,15 +85,11 @@ void ATankPawn::Tick(float DeltaTime)
 	float YawValue = CurrentRotation.Yaw + YawSpeed * CurrentYawAxis * DeltaTime;
 	SetActorRotation(FRotator(0, YawValue, 0));
 
-	if (TankController)																								   //TurretMovement
-	{
-		FVector TurretLookAtPoint = TankController->GetMousePos();
-		FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), TurretLookAtPoint);
-		FRotator CurTurretRotation = TurretMesh->GetComponentRotation();
-		TargetRotation.Pitch = CurTurretRotation.Pitch;
-		TargetRotation.Roll = CurTurretRotation.Roll;
-		TurretMesh->SetWorldRotation(FMath::Lerp(CurTurretRotation, TargetRotation, TurretRotationSensitivity));
-	}
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(TurretMesh->GetComponentLocation(), TurretLookAtPoint);
+	FRotator CurTurretRotation = TurretMesh->GetComponentRotation();
+	TargetRotation.Pitch = CurTurretRotation.Pitch;
+	TargetRotation.Roll = CurTurretRotation.Roll;
+	TurretMesh->SetWorldRotation(FMath::Lerp(CurTurretRotation, TargetRotation, TurretRotationSensitivity));
 }
 
 void ATankPawn::MoveForward(float InAxisValue)
@@ -101,6 +107,11 @@ void ATankPawn::Yaw(float InAxisValue)
 	TargetYawAxis = InAxisValue;
 }
 
+void ATankPawn::SetTurretLookAtPoint(FVector InPoint)
+{
+	TurretLookAtPoint = InPoint;
+}
+
 void ATankPawn::SwapCannon()
 {
 	ACannon* Temp = Cannon;
@@ -108,11 +119,6 @@ void ATankPawn::SwapCannon()
 	SecCannon = Temp;
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SWAP!!!"), true);
 	
-}
-
-void ATankPawn::GetScore()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SCORE!!!"), true);
 }
 
 //void ATankPawn::ReloadAmmo()
@@ -145,5 +151,60 @@ void ATankPawn::SetupCannon()
 		Cannon = GetWorld()->SpawnActor<ACannon>(CannonClass, Params);
 		Cannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetIncludingScale);
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SETUP!!!"), true);
+	}
+}
+
+void ATankPawn::Die()
+{
+	FVector DestroyLocation = GetActorLocation();
+	DestroyVisualEffect->ActivateSystem();
+	DestroyAudioEffect->Play();
+	PrimaryActorTick.bCanEverTick = false;
+	BodyMesh->DestroyComponent();
+	TurretMesh->DestroyComponent();
+	CannonSetupPoint->DestroyComponent();
+	Cannon->Destroy();
+}
+
+void ATankPawn::DamageTaken(float DamageValue)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Turret %s taked damage:%f Health:%f"), *GetName(), DamageValue, HealthComponent->GetHealth());
+}
+
+bool ATankPawn::TakeDamage(FDamageData DamageData)
+{
+	return HealthComponent->TakeDamage(DamageData);
+}
+
+TArray<FVector> ATankPawn::GetPatrollingPoints()
+{
+	return PatrollingPoints;
+}
+
+FVector ATankPawn::GetEyesPosition() const
+{
+	return CannonSetupPoint->GetComponentLocation();
+}
+
+float ATankPawn::GetMovementAccurency()
+{
+	return MovementAccurency;
+}
+
+float ATankPawn::GetScore()
+{
+	return ScoreComponent->GetScore();
+}
+
+void ATankPawn::SetScore(float Score)
+{
+	ScoreComponent->SetScore(Score);
+}
+
+void ATankPawn::Fire()
+{
+	if (Cannon)
+	{
+		Cannon->Fire();
 	}
 }

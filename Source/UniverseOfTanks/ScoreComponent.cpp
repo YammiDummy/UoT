@@ -7,14 +7,19 @@
 UScoreComponent::UScoreComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	CurrentScore = 0;
+	CurrentScore = 0.f;
 }
 
 
-void UScoreComponent::GiveScore(FScoreData ScoreData)
+float UScoreComponent::GetScore( )
 {
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("GET"), true);
+	return RewardScore;
+}
 
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("SCORE"), true);
-
+void UScoreComponent::SetScore(float Score)
+{
+	CurrentScore += Score;
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString::Printf(TEXT("%f"), CurrentScore), true);
 }
 

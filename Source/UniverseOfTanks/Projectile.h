@@ -6,24 +6,29 @@
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
+class UStaticMeshComponent;
+class UParticleSystemComponent;
+class UAudioComponent;
+class ACannon;
+
 UCLASS()
 class UNIVERSEOFTANKS_API AProjectile : public AActor
 {
 	GENERATED_BODY()
 
-
-		DECLARE_EVENT(AProjectile, FAddScore)
-
 public:
 	AProjectile();
-
-
-	FAddScore TargetDestroyed;
 
 	void Start(class ACannon* InCannon);
 	
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	UStaticMeshComponent* ProjMesh;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UParticleSystemComponent* HitVisualEffect;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UAudioComponent* HitAudioEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement")
 	float MoveSpeed = 100;
@@ -32,13 +37,14 @@ public:
 	float MoveRate = 0.005f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Damage")
-	float Damage = 1;
+	float Damage = 1.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float MoveRange = 1000.f;
 
-	UPROPERTY();
+	UPROPERTY()
 	ACannon* LaunchCannon;
+
 	FTimerHandle MovementTimerHandle;
 	FTimerHandle LifeTimerHandle;
 
